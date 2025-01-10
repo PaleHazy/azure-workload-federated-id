@@ -11,11 +11,19 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: Docker@2
+- task: AzureCLI@2
+  displayName: 'Azure CLI '
   inputs:
-    containerRegistry: hazyforge.azurecr.io
-    tags: "reggy"
-    repository: reppy
-    command: 'login'
-    addPipelineData: false
-    addBaseImageData: false
+    azureSubscription: devops-id
+    addSpnToEnvironment: true
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+     echo "##vso[task.setvariable variable=ARM_CLIENT_ID]$servicePrincipalId" 
+     echo "##vso[task.setvariable variable=ARM_ID_TOEKN]$idToken"
+     echo "##vso[task.setvariable variable=ARM_TENANT_ID]$tenantId"
+
+
+- bash: |
+   az login --service-principal -u $(ARM_CLIENT_ID) --tenant $(ARM_TENANT_ID) --allow-no-subscriptions --federated-token $(ARM_ID_TOEKN)
+  displayName: 'Login Azure'
